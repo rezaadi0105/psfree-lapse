@@ -1,4 +1,4 @@
-# PSFree WebKit Exploit & Lapse Kernel Exploit v2.04 for PS4
+# PSFree WebKit Exploit & Lapse Kernel Exploit v2.2 for PS4
 
 A PSFree & Lapse exploit for PS4 firmware 7.00 to 9.60
 > ⚠️ This repository is for research and educational purposes only.
@@ -32,27 +32,49 @@ Through these changes, the original modular `.mjs` structure has been refactored
 - **Refactored for more sequential** `C-like` **execution** — code reorganized to follow a linear flow for easier reasoning, deterministic timing, and simpler debugging.
 - **Rewrote** `Number.isInteger()` **implementation** — The original exploit implementation relied on `Number.isInteger()`, which I guess not fully supported in the PS4’s WebKit-based JavaScript environment (situated between `ES5` and `Partial ES6` compliance). To ensure consistent behavior across these runtimes, the function was rewritten using fundamental type and arithmetic checks. This guarantees proper integer validation even in restricted or legacy WebKit engines.
 - **Rewrote** `hexdump()` **implementation** — adjusted string/byte handling to comply with the PS4’s WebKit-based JavaScript environment.
-- **Improved GC handling with short delay** — added a small wait (≈50 ms) to certain `gc()` paths to stabilize memory reclamation timing.
 - **Added initialization checks for variable operations** — guard checks ensure variables are initialized before use to prevent undefined-state failures.
 - **Reordered and cleaned global variable initializations** — made global setup deterministic and reduced race conditions at startup.
 - **Added parentheses to some of the logic expressions** — explicit grouping was added to prevent operator-precedence ambiguities and reduce logic errors.
 - **Removed debugging logs** — cleaned up and commented out debugging logs to reduce side effects and improve runtime consistency.
 - **Embedded** `.elf/.bin` **assets as hex arrays inside JS** — binary resources converted to in-file hex arrays to avoid read/load errors in constrained environments.
+- **Modernized shellcode implementation** — adapted structural conventions from the BD-JB source and introduced a utility function to convert kpatch hex strings into byte arrays.
 - **Replaced** `XMLHttpRequest()` **with** `fetch()`**/file reads** — modernized file-loading code for better compatibility and promise-based control flow.
 - **Removed all** `localStorage` **and** `sessionStorage` **usage** — Storage APIs were removed to avoid cross-origin restrictions, quota issues, and inconsistent behavior in sandboxed WebKit environments.
 - **Implemented console firmware detection** — Added logic to automatically detect the running PS4 firmware version, enabling conditional execution paths and improving overall compatibility across different system revisions.
 - **Merged various tweaks from Al-Azif’s source** — Incorporated selected stability, compatibility, and workflow improvements from Al-Azif’s implementation to enhance overall reliability and reduce edge-case failures.
 - **Added multi-firmware support (7.00 -> 9.60) from Al-Azif’s source** — Full support implemented for firmware versions 7.00 through 9.60, including: Kernel patch + AIO fix .bin files
+- **Reworked** `jitshm` **handling in the kpatch stage** — replaced the previous `write_fd` aliasing approach with direct `exec_fd` usage to simplify JIT shared memory management.
+- **Minor adjustment to** `make_aliased_pktopts` **routine** — removed the repeated loop that previously attempted multiple alias creations. Failed retries could trigger kernel panic or immediate console shutdown. The updated routine now performs **a single attempt**; if it fails, the user is expected to restart from the system menu and retry safely. If you want to increase retry quantity, change the value `const pktopts_loopcnt = 1`.
+- **Minor adjustment to kernel address leak scanning resolution** — reduced the offset increment step from `0x80` to `0x40` during the `leak_kernel_addrs` phase to increase detection accuracy and reduce the likelihood of missing valid structures.
+- **Simlified payload loader function** — removed stub-based trampoline and switched to direct RWX payload execution.
+- **GC handling improvements** — garbage collection handling within the PSFree stage has been refined to improve object scanning reliability. Memory layout adjustments were introduced to ensure that critical indices (including index 0) are properly scanned during GC traversal. This reduces the risk of unexpected object invalidation and increases exploit stability under memory pressure.
+- **Stabilized failure handling via structured cleanup routine** — implemented a BD-JB-inspired `doCleanup()` function to properly release exploit resources before exit. Without this cleanup stage, failed attempts could leave the system in an unstable state, often triggering an immediate kernel panic and hard shutdown when attempting to restart. With proper resource unwinding, the console can now be safely restarted from the system menu, allowing clean retry attempts.
+- **BinLoader function** — The BinLoader function is activated on the second run of the exploit. After checking if the host is already jailbroken, the host starts the BinLoader and listens on port 9020. Send your payload using a compatible payload injector. My repo `psx_payload_injector` can also be used.
+- **Background image** — Background image support has been added. Rename your preferred image to **bg.jpg** and replace the existing file in the root directory. Make sure to use an image with an appropriate resolution.
 
 ## ToDo List
 
-- Add 6.XX support
+- Investigate Lapse Stage 3 to improve success rate
 
 ## Notes:
 
-> All payload binaries (`*.bin`, `*.elf`) were intentionally excluded.
-> Step-by-step jailbreak instructions were omitted for legal and ethical compliance.  
+> Firmware 7.00–9.60 includes integrated PSFree kernel patch shellcodes and **AIO patch sets**.
+
+> All payload binaries (`*.bin`, `*.elf`) were intentionally excluded. This repository does not include `payload.bin` file. Place your preferred Homebrew Enabler (HEN) payload in the root directory.
+
+> Step-by-step jailbreak instructions were omitted for legal and ethical compliance.
+
 > No modifications that alter the exploit logic in ways affecting device security outside test context.
+
+## Local Self-Hosting
+
+You can self-host the project using Python's built-in HTTP server.
+
+Windows: `py -m http.server 8080`
+
+Linux/macOS: `python3 -m http.server 8080`
+
+On your PS4 browser, navigate to: `http://YOUR_PC_IP:8080/index.html`
 
 ## Contributing
 
