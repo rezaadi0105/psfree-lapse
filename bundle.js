@@ -4779,7 +4779,7 @@ async function doJailBreak() {
       window.log("Failed to load HEN!\nPlease restart console and try again...", "red");
       return;
     }
-    window.log("Homebrew Enabler loaded", "green");
+    window.log("Payload Loaded", "green");
     window.log("\nPSFree & Lapse exploit with AIO fixes by ABC");
   }
   else {

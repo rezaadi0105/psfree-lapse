@@ -12,10 +12,6 @@ This repository is a research-focused fork of [PSFree](https://github.com/kmeps4
 
 Through these changes, the original modular `.mjs` structure has been refactored into a single-file `.js` implementation designed to execute in a more sequential, `C-like` flow. This approach improves readability, simplifies debugging and ensures consistent execution timing across environments.
 
-<p align="center">
-  <img src="psfree_lapse_2.04.png" alt="PSFree" width="537" height="588"/>
-</p>
-
 ---
 
 ## **Legal Notice & Disclaimer:**
